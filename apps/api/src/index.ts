@@ -7,7 +7,7 @@ import seedRoutes from './routes/seed';
 import { initDb } from './db/database';
 
 const app= express()
-const port = process.env.PORT || 3005;
+const port = process.env.PORT || 3123;
 
 app.use(cors());
 app.use(express.json());

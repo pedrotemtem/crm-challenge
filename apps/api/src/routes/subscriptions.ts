@@ -1,16 +1,20 @@
 import { Router, Request, Response } from 'express';
-import { getAllTransactions, getTransactionById } from '../db/queries';
+import { getAllSubscriptions, getSubscriptionById, getTransactionsBySubscription } from '../db/queries';
 
 const router = Router();
 
 router.get('/', (_req: Request, res: Response) => {
-    res.json(getAllTransactions());
+    res.json(getAllSubscriptions());
 });
 
 router.get('/:id', (req: Request, res: Response) => {
-    const tx = getTransactionById(req.params.id);
-    if (!tx) return res.status(404).json({ error: 'Transaction not found' });
-    res.json(tx);
+    const sub = getSubscriptionById(req.params.id);
+    if (!sub) return res.status(404).json({ error: 'Subscription not found' });
+    res.json(sub);
+});
+
+router.get('/:id/transactions', (req: Request, res: Response) => {
+    res.json(getTransactionsBySubscription(req.params.id));
 });
 
 export default router;

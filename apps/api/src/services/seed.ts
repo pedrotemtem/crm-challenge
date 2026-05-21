@@ -47,12 +47,32 @@ export async function seedFromCsv(): Promise<{ customers: number; subscriptions:
                 subscriptionId: row.subscriptionId,
                 customerId: row.customerId,
                 product: row.product,
-                status: row.subscriptionStatus,
+                status: null as string | null,
                 amount: parseFloat(row.amount),
                 currency: row.currency,
-                startDate: new Date(row.completed).toISOString(),
+                startDate: row.completed ? new Date(row.completed).toISOString() : null,
             });
         }
+    }
+
+    // Check subscription status based on last approved transaction if in last 30 days
+    // 120 days is just to check if active is working
+    const ACTIVE_WINDOW_DAYS = 120;
+    const txBySub = new Map<string, any[]>();
+    for (const row of rows) {
+        if (!txBySub.has(row.subscriptionId)) txBySub.set(row.subscriptionId, []);
+        txBySub.get(row.subscriptionId)!.push(row);
+    }
+    for (const sub of subscriptionsMap.values()) {
+        const lastApproved = (txBySub.get(sub.subscriptionId) ?? [])
+            .filter(t => t.status === 'Approved')
+            .sort((a, b) => new Date(b.completed).getTime() - new Date(a.completed).getTime())[0];
+
+        const daysSince = lastApproved
+            ? (Date.now() - new Date(lastApproved.completed).getTime()) / 86_400_000
+            : Infinity;
+
+        sub.status = daysSince <= ACTIVE_WINDOW_DAYS ? 'active' : 'cancelled';
     }
 
     // Insert using transactions for performance
@@ -62,7 +82,7 @@ export async function seedFromCsv(): Promise<{ customers: number; subscriptions:
   `);
 
     const insertSubscription = db.prepare(`
-    INSERT OR IGNORE INTO subscriptions (subscriptionId, customerId, product, status, amount, currency, startDate)
+    INSERT OR REPLACE INTO subscriptions (subscriptionId, customerId, product, status, amount, currency, startDate)
     VALUES (@subscriptionId, @customerId, @product, @status, @amount, @currency, @startDate)
   `);
 
