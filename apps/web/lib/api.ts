@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Customer, Subscription, Transaction } from '@crm/types';
 
 const client = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://16.171.171.82:3123',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3123',
 });
 
 
