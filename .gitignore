@@ -27,6 +27,11 @@ out/
 build
 dist
 
+# SQLite (runtime DB files)
+*.db
+*.db-shm
+*.db-wal
+
 
 # Debug
 npm-debug.log*

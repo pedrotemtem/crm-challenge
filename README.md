@@ -1,159 +1,109 @@
-# Turborepo starter
+# PaddyLabs CRM Challenge
 
-This Turborepo starter is maintained by the Turborepo core team.
+A minimal CRM application built as a Turborepo monorepo with a Next.js + Material UI frontend and an Express + SQLite API.
 
-## Using this example
+## Live Demo
 
-Run the following command:
+- **Frontend:** http://16.171.171.82:3000
+- **API:** http://16.171.171.82:3123
 
-```sh
-npx create-turbo@latest
+## Tech Stack
+
+| Layer       | Technology                                |
+|-------------|-------------------------------------------|
+| Monorepo    | Turborepo + pnpm                          |
+| Backend     | Node.js · Express · TypeScript · SQLite   |
+| Frontend    | Next.js · Material UI · TypeScript        |
+| Deployment  | AWS EC2 (PM2)                             |
+
+## Project Structure
+
+```
+apps/
+  api/    Express + SQLite API
+  web/    Next.js + MUI frontend
+packages/
+  types/             Shared TypeScript types
+  ui/                Shared UI components
+  eslint-config/     Shared ESLint config
+  typescript-config/ Shared tsconfig presets
 ```
 
-## What's inside?
+## Running Locally
 
-This Turborepo includes the following packages/apps:
+### Prerequisites
 
-### Apps and Packages
+- Node.js 20+
+- pnpm 9+ (`npm install -g pnpm`)
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### Install & run
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+```bash
+git clone https://github.com/pedrotemtem/crm-challenge.git
+cd crm-challenge
+pnpm install
 
-### Utilities
+# Configure the frontend
+echo "NEXT_PUBLIC_API_URL=http://localhost:3123" > apps/web/.env.local
 
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+# Run both API and frontend
+pnpm dev
 ```
 
-Without global `turbo`, use your package manager:
+- API: http://localhost:3123
+- Frontend: http://localhost:3000
 
-```sh
-cd my-turborepo
-npx turbo build
-npm dlx turbo build
-npm exec turbo build
+You can also run each app individually with `pnpm dev` inside `apps/api` or `apps/web`.
+
+### Seed the Database
+
+With the API running, populate it from the source CSV (hosted on S3):
+
+```bash
+curl -X POST http://localhost:3123/seed
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+## API Endpoints
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+### Customers
+| Method | Endpoint                          | Description                  |
+|--------|-----------------------------------|------------------------------|
+| GET    | `/customers`                      | List all customers           |
+| GET    | `/customers/:id`                  | Get a single customer        |
+| GET    | `/customers/:id/subscriptions`    | Customer's subscriptions     |
+| GET    | `/customers/:id/transactions`     | Customer's transactions      |
 
-```sh
-turbo build --filter=docs
+### Subscriptions
+| Method | Endpoint                              | Description                  |
+|--------|---------------------------------------|------------------------------|
+| GET    | `/subscriptions`                      | List all subscriptions       |
+| GET    | `/subscriptions/:id`                  | Get a single subscription    |
+| GET    | `/subscriptions/:id/transactions`     | Subscription's transactions  |
+
+### Transactions
+| Method | Endpoint              | Description              |
+|--------|-----------------------|--------------------------|
+| GET    | `/transactions`       | List all transactions    |
+| GET    | `/transactions/:id`   | Get a single transaction |
+
+### Seed
+| Method | Endpoint   | Description                |
+|--------|------------|----------------------------|
+| POST   | `/seed`    | Seed database from S3 CSV  |
+
+## Frontend Views
+
+- **Customers** — Paginated table with search by name or email
+- **Customer Detail** — Profile, subscriptions and recent transactions
+- **Subscriptions** — Table with active/cancelled filter
+- **Transactions** — Table with stats (total amount, count, success rate)
+
+## Deployment
+
+Both services run on a single AWS EC2 `t3.micro` instance under PM2. To redeploy, SSH into the instance and run:
+
+```bash
+~/deploy.sh
 ```
 
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-npm exec turbo build --filter=docs
-npm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-npm exec turbo dev
-npm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-npm exec turbo dev --filter=web
-npm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-npm exec turbo login
-npm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-npm exec turbo link
-npm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+This pulls the latest code, rebuilds the API and restarts PM2.
