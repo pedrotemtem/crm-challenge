@@ -1,0 +1,39 @@
+### CRM API
+
+@baseUrl = http://localhost:3123
+
+### Seed the database from the S3 CSV
+POST {{baseUrl}}/seed
+
+### --- Customers ---
+
+### List all customers
+GET {{baseUrl}}/customers
+
+### Get a single customer
+GET {{baseUrl}}/customers/DEMO43534060
+
+### Get a customer's subscriptions
+GET {{baseUrl}}/customers/1/subscriptions
+
+### Get a customer's transactions
+GET {{baseUrl}}/customers/1/transactions
+
+### --- Subscriptions ---
+
+### List all subscriptions
+GET {{baseUrl}}/subscriptions
+
+### Get a single subscription
+GET {{baseUrl}}/subscriptions/1
+
+### Get a subscription's transactions
+GET {{baseUrl}}/subscriptions/1/transactions
+
+### --- Transactions ---
+
+### List all transactions
+GET {{baseUrl}}/transactions
+
+### Get a single transaction
+GET {{baseUrl}}/transactions/1

@@ -64,15 +64,15 @@ export async function seedFromCsv(): Promise<{ customers: number; subscriptions:
         txBySub.get(row.subscriptionId)!.push(row);
     }
     for (const sub of subscriptionsMap.values()) {
-        const lastApproved = (txBySub.get(sub.subscriptionId) ?? [])
-            .filter(t => t.status === 'Approved')
+        const lastTx = (txBySub.get(sub.subscriptionId) ?? [])
             .sort((a, b) => new Date(b.completed).getTime() - new Date(a.completed).getTime())[0];
 
-        const daysSince = lastApproved
-            ? (Date.now() - new Date(lastApproved.completed).getTime()) / 86_400_000
+        const daysSince = lastTx
+            ? (Date.now() - new Date(lastTx.completed).getTime()) / 86_400_000
             : Infinity;
 
-        sub.status = daysSince <= ACTIVE_WINDOW_DAYS ? 'active' : 'cancelled';
+        const lastWasSuccess = lastTx && (lastTx.status === 'Approved' || lastTx.status === 'Success' || lastTx.status === 'Preauthorized');
+        sub.status = lastWasSuccess && daysSince <= ACTIVE_WINDOW_DAYS ? 'active' : 'cancelled';
     }
 
     // Insert using transactions for performance
